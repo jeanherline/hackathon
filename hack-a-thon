@@ -1,0 +1,269 @@
+import javax.swing.*;
+import java.awt.Toolkit;
+import java.sql.*;
+import net.proteanit.sql.DbUtils;
+
+public class dbConnect {
+
+	Connection con;
+	PreparedStatement sqlStatement;
+	ResultSet rs;
+
+	String connection = "jdbc:mysql://localhost:3306/ite202infosystem";
+	String username = "myRoot";
+	String password = "123456";
+
+	String qryAll;
+	String qryFind;
+	String qryUpdate;
+	String qryDelete;
+	
+	public static void connectionDb() {
+
+		try {
+			con = DriverManager.getConnection(conn, username, password);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	//Connection Establish
+	public static void conEstablish() {
+
+		try {
+			con = DriverManager.getConnection(conn, username, password);
+
+			if(con!=null) {
+				System.out.println("Connection Established!");
+			} else {
+				System.out.println("Error Connection!");
+			}
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	//Connection Close
+	public static void close() {
+		try {
+			con.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	//Search Method
+	public void search(JTextField txtSearch, JTable tblStd) {
+		try {
+			con = DriverManager.getConnection(connection, username, password);
+			qryFind = "SELECT * FROM tblstudents WHERE studID = ?";
+
+			sqlStatement = con.prepareStatement(qryFind);
+			sqlStatement.setString(1, txtSearch.getText());
+			rs = sqlStatement.executeQuery();
+			tblStd.setModel(DbUtils.resultSetToTableModel(rs));
+
+			con.close();
+
+		}catch(Exception e) {System.out.print(e);}
+	}
+ 
+	//Save Method
+	public void save(JTextField txtStudID, JTextField txtName, JComboBox<String> cbbSex, JTable tblStd) {
+		String getStudID = txtStudID.getText();
+		String getName = txtName.getText();
+
+		if(getStudID.equals("") || getName.equals("")) {
+			Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,"Invalid! Input not found.");
+		}else {
+
+			try {
+				con = DriverManager.getConnection(connection, username, password);
+				sqlStatement = con.prepareStatement("INSERT into tblstudents (studID, studName, studSex) VALUES (?, ?, ?)");
+
+				sqlStatement.setString(1, getStudID);
+				sqlStatement.setString(2, getName);
+				sqlStatement.setString(3,cbbSex.getSelectedItem().toString());
+				
+				sqlStatement.executeUpdate();
+				
+				tablePopulate(tblStd);
+				JOptionPane.showMessageDialog(null, "Record Created!");
+
+				con.close();
+
+			}catch(Exception er) {System.out.print(er);}
+		}
+	}
+
+	//Table View
+	public void tablePopulate(JTable tblStd) {
+		try {
+			con = DriverManager.getConnection(connection, username, password);
+			qryAll = "select * from tblstudents";
+
+			sqlStatement = con.prepareStatement(qryAll);
+			rs = sqlStatement.executeQuery(qryAll);
+			tblStd.setModel(DbUtils.resultSetToTableModel(rs));
+
+			con.close();
+
+		}catch(Exception er){System.out.print(er);}
+	}
+
+	//Clear Data
+	public void clearData(JTextField txtStudID, JTextField txtName, JComboBox<String> cbbSex,JTextField txtSearch) {
+		String getStudID = txtStudID.getText().toString();
+		String getName = txtName.getText().toString();
+
+		if(getStudID.equals("") || getName.equals("")) {
+			Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,"There is no input data to be cleared out.");
+		} else  {
+			try {
+				txtStudID.setText("");
+				txtName.setText("");
+				txtSearch.setText("");
+				cbbSex.setSelectedIndex(0);
+				txtStudID.requestFocusInWindow();
+
+				JOptionPane.showMessageDialog(null, "Record input has been cleared.");
+
+			}catch(Exception er){System.out.print(er);}
+		}
+	}
+
+	//Clear Set for Buttons
+	public void clear(JTextField txtStudID, JTextField txtName, JComboBox<String> cbbSex,JTextField txtSearch) {
+		try {
+			txtStudID.setText("");
+			txtName.setText("");
+			txtSearch.setText("");
+			cbbSex.setSelectedIndex(0);
+			txtStudID.requestFocusInWindow();
+
+		}catch(Exception er){System.out.print(er);}
+	}
+
+
+	//Update Student Data
+	public void update(JTable tblStd, JTextField txtStudID, JTextField txtName, JComboBox<String> cbbSex) {
+
+		String getStudID = txtStudID.getText().toString();
+		String getName = txtName.getText().toString();
+
+		if(getStudID.equals("") || getName.equals("")) {
+			Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog(null,"Invalid! Input not found.");
+
+		}else{
+			try {
+				//Updated
+				String messageBox = ("Are you sure you want to update the Student Data?");
+				Toolkit.getDefaultToolkit().beep();
+				int answer = JOptionPane.showConfirmDialog(null, messageBox, "Exit", JOptionPane.YES_NO_OPTION);
+
+				if(answer == JOptionPane.YES_OPTION) {
+					con = DriverManager.getConnection(connection, username, password);
+
+					qryUpdate = "UPDATE tblstudents SET studID = ?," + "studName = ?," + "studSex = ?" + "WHERE studID = ?";
+					sqlStatement = con.prepareStatement(qryUpdate);
+
+					sqlStatement.setString(1, getStudID);
+					sqlStatement.setString(2, getName);
+					sqlStatement.setString(3,cbbSex.getSelectedItem().toString());
+					sqlStatement.setString(4, getStudID);
+
+					sqlStatement.executeUpdate();
+					tablePopulate(tblStd);
+					JOptionPane.showMessageDialog(null, "Record Updated!");
+
+					con.close();
+
+					//Update Cancel
+				} else if(answer == JOptionPane.NO_OPTION) {
+
+					tablePopulate(tblStd);
+					Toolkit.getDefaultToolkit().beep();
+					JOptionPane.showMessageDialog (null, "Updating of Student " + txtStudID.getText()+" has been cancelled.");
+
+					con.close();
+				}
+
+			}catch(Exception er) {System.out.print(er);}
+		}
+	}
+
+	//Student Exist
+	public boolean checkDelete(JTextField txtSearch) {
+		try {
+			con = DriverManager.getConnection(connection, username, password);
+			qryFind = "SELECT * FROM tblstudents WHERE studID = ?";
+
+			sqlStatement = con.prepareStatement(qryFind);
+			sqlStatement.setString(1, txtSearch.getText());
+
+			rs = sqlStatement.executeQuery();
+
+			while(rs.next()) {
+				con.close();
+				return true;
+			}
+		} catch (Exception e) {System.out.println(e.toString());} 
+
+		return false;
+	}
+
+	//Delete Method
+	public void delete(JTextField txtSearch, JTextField txtStudID, JTable tblStd, JTextField txtName) {
+
+		if(checkDelete(txtSearch)) {
+			try {
+				//Deletion Alert
+				String messageBox = ("Are you sure you want to delete the Student Data?");
+				Toolkit.getDefaultToolkit().beep();
+				int answer = JOptionPane.showConfirmDialog(null, messageBox, "Exit", JOptionPane.YES_NO_OPTION);
+
+				if(answer == JOptionPane.YES_OPTION) {
+					con.close();
+
+					con = DriverManager.getConnection(connection, username, password);
+					qryDelete = "DELETE FROM tblstudents WHERE studID = ?";
+
+					sqlStatement = con.prepareStatement(qryDelete);
+					sqlStatement.setString(1, txtSearch.getText());
+					sqlStatement.execute();
+
+					con.close();
+
+					tablePopulate(tblStd);
+					JOptionPane.showMessageDialog (null, "Student " + txtSearch.getText()+" has been deleted.");
+
+					//Deletion Cancelled
+				} else if(answer == JOptionPane.NO_OPTION) {
+					tablePopulate(tblStd);
+					Toolkit.getDefaultToolkit().beep();
+
+					JOptionPane.showMessageDialog (null, "Deletion of Student " + txtSearch.getText()+" has been cancelled.");
+					con.close();
+				}
+
+			} catch (Exception e) {System.out.println(e.toString());}
+
+
+		} else if (!txtStudID.getText().isEmpty() || (!txtName.getText().isEmpty())) {
+			Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog (null, "Please delete a Student Data using the Search text field.");
+
+		}else {
+			Toolkit.getDefaultToolkit().beep();
+			JOptionPane.showMessageDialog (null, "Student " + txtSearch.getText()+" not found!");
+
+		}
+	}
+
+}

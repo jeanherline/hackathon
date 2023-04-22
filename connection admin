@@ -1,0 +1,58 @@
+import javax.swing.*;
+import java.awt.Toolkit;
+import java.sql.*;
+
+
+public class dbConnect {
+
+	static Connection con;
+	PreparedStatement sqlStatement;
+	ResultSet rs;
+
+	final static String connection = "jdbc:mysql://localhost:3306/ite202infosystem";
+	final static String username = "myRoot";
+	final static String password = "123456";
+
+	String qryAll;
+	String qryFind;
+	String qryUpdate;
+	String qryDelete;
+	
+	public static  Connection connectionDb() {
+
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			Connection con = DriverManager.getConnection(connection, username, password);
+			return con;
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	//Connection Establish
+	public static void conEstablish() {
+
+		try {
+			Connection con = DriverManager.getConnection(connection, username, password);
+
+			if(con!=null) {
+				System.out.println("Connection Established!");
+			} else {
+				System.out.println("Error Connection!");
+			}
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+	}
+
+	//Connection Close
+	public static void close() {
+		try {
+			con.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}

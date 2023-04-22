@@ -1,0 +1,147 @@
+import javax.swing.*;
+import java.awt.event.*;
+import javax.swing.table.*;
+
+public class frmStudents extends JFrame {
+
+	private static final long serialVersionUID = 1L;
+	
+	JTable tblStd = new JTable();
+	DefaultTableModel dtm = (DefaultTableModel) tblStd.getModel();
+	dbConnect studRecord = new dbConnect();
+
+	public frmStudents() {
+		super("Students");
+		setLayout(null);
+
+		//Student ID
+		JLabel lblStudID = new JLabel("Student ID");
+		lblStudID.setBounds(240,170,200,30);
+		add(lblStudID);
+
+		JTextField txtStudID = new JTextField(8);
+		txtStudID.setBounds(320,170,200,30);
+		add(txtStudID);
+
+		//Name
+		JLabel lblName = new JLabel("Name");
+		lblName.setBounds(240,205,200,30);
+		add(lblName);
+
+		JTextField txtName = new JTextField(15);
+		txtName.setBounds(320,205,200,30);
+		add(txtName);
+
+		//Sex
+		JLabel lblSex = new JLabel("Sex");
+		lblSex.setBounds(240,240,200,30);
+		add(lblSex);
+
+		//ComboBox
+		String [] valCbb = { "Male" , "Female", "Other"};
+		JComboBox<String> cbbSex = new JComboBox<>(valCbb);
+		cbbSex.setBounds(320,240,200,30);
+		((JLabel)cbbSex.getRenderer()).setHorizontalAlignment(SwingConstants.CENTER);
+		add(cbbSex);
+
+		//Search
+		JLabel lblSearch = new JLabel("Search");
+		lblSearch.setBounds(240,275,200,30);
+		add(lblSearch);
+
+		JTextField txtSearch = new JTextField(15);
+		txtSearch.setBounds(320,275,200,30);
+		add(txtSearch);
+
+		txtSearch.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent args) {
+
+				if(!txtSearch.getText().isEmpty()) {
+					studRecord.search(txtSearch, tblStd);
+				} else {
+					studRecord.tablePopulate(tblStd);
+				}
+			}
+		});
+
+		//Table
+		JScrollPane sp = new JScrollPane();
+		sp.setViewportView(tblStd);
+		sp.setBounds(120, 330, 540, 280);
+		setSize(200,200);
+		setVisible(true);
+		add(sp);
+
+		//Save Button
+		JButton btnSave = new JButton("Save");
+		btnSave.setBounds(120,630,100,30);
+		btnSave.setMnemonic('S');
+		add(btnSave);
+
+		btnSave.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent args) {
+
+				studRecord.save(txtStudID, txtName, cbbSex, tblStd);
+				studRecord.clear(txtStudID, txtName, cbbSex, txtSearch);
+			}
+		});
+
+		//Clear Data Button
+		JButton btnClear = new JButton("Clear Data");
+		btnClear.setBounds(230,630,100,30);
+		btnClear.setMnemonic('C');
+		add(btnClear);
+
+		btnClear.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent args){
+
+				studRecord.clearData(txtStudID, txtName, cbbSex, txtSearch);
+				studRecord.tablePopulate(tblStd);
+			}
+		});
+
+		//View Button
+		JButton btnView = new JButton("View List");
+		btnView.setBounds(340,630,100,30);
+		btnView.setMnemonic('V');
+		add(btnView);
+
+		btnView.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent args) {
+
+				studRecord.tablePopulate(tblStd);
+				txtStudID.requestFocusInWindow();
+
+			}
+		});
+
+		//Update Button
+		JButton btnUpdate = new JButton("Update");
+		btnUpdate.setBounds(450, 630, 100,30);
+		btnUpdate.setMnemonic('U');
+		add(btnUpdate);
+
+		btnUpdate.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent args) {
+
+				studRecord.update(tblStd, txtStudID, txtName, cbbSex);
+				studRecord.clear(txtStudID, txtName, cbbSex, txtSearch);
+			}
+		});
+
+		//Delete Button
+		JButton btnDelete =new JButton("Delete");
+		btnDelete.setBounds(560, 630, 100,30);
+		btnDelete.setMnemonic('D');
+		add(btnDelete);
+
+		btnDelete.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent args){
+
+				studRecord.delete(txtSearch, txtStudID, tblStd, txtName);
+				studRecord.clear(txtStudID, txtName, cbbSex, txtSearch);
+			} 
+		});
+		
+	}
+}
